@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 public class WorldGenerator : MonoBehaviour {
 	
@@ -23,6 +24,11 @@ public class WorldGenerator : MonoBehaviour {
 	public int gateChance;
 	public int showItemDistance;
 	public float shadowHeight;
+	public Text speedText;
+	
+	// Variables for speed control (new)
+	public float speedIncrement = 1f; // Amount to increase speed by each interval
+	public float speedIncreaseInterval = 10f; // Time interval in seconds
 	
 	//not visible in the inspector
 	Vector3[] beginPoints;
@@ -30,7 +36,8 @@ public class WorldGenerator : MonoBehaviour {
 	GameObject[] pieces = new GameObject[2];
 	
 	GameObject currentCylinder;
-	
+	private Coroutine speedCoroutine;
+
 	void Start(){
 		//create an array to store the begin vertices for each world part (we'll need that to correctly transition between world pieces) 
 		beginPoints = new Vector3[(int)dimensions.x + 1];
@@ -38,9 +45,40 @@ public class WorldGenerator : MonoBehaviour {
 		//start by generating two world pieces
 		for(int i = 0; i < 2; i++){
 			GenerateWorldPiece(i);
+			
+		}
+		
+		speedCoroutine = StartCoroutine("IncreaseSpeedOverTime");
+		//Debug.Log(IncreaseSpeedOverTime());
+	}
+	IEnumerator IncreaseSpeedOverTime() {
+		while (true) {
+			// Increment global speed
+			globalSpeed += speedIncrement;
+			Debug.Log(globalSpeed);
+
+			// Update all BasicMovement components with the new global speed
+			foreach (GameObject piece in pieces) {
+				if (piece != null) {
+					BasicMovement movement = piece.GetComponent<BasicMovement>();
+					if (movement != null) {
+						movement.movespeed = -globalSpeed; // Update the speed for BasicMovement
+					}
+				}
+			}
+
+			// Wait for the specified interval before increasing speed again
+			yield return new WaitForSeconds(speedIncreaseInterval);
 		}
 	}
-	
+	public void StopSpeedIncrement()
+	{
+		if (IncreaseSpeedOverTime() != null)
+		{
+			StopCoroutine(speedCoroutine);
+			speedCoroutine = null;
+		}
+	}
 	void LateUpdate(){
 		//if the second piece is close enough to the player, we can remove the first piece and update the terrain
 		if(pieces[1] && pieces[1].transform.position.z <= 0)
@@ -48,6 +86,10 @@ public class WorldGenerator : MonoBehaviour {
 		
 		//update all items in the scene like spikes and gates
 		UpdateAllItems();
+
+		speedText.text = "Speed:" +globalSpeed.ToString();
+		speedText.text = PlayerPrefs.SetFloat(speed);
+
 	}
 	
 	void UpdateAllItems(){
@@ -108,8 +150,9 @@ public class WorldGenerator : MonoBehaviour {
 		//add the basic movement script to our newly generated piece to make it move towards the player
 		BasicMovement movement = piece.AddComponent<BasicMovement>();
 		//make it move with a speed of globalspeed
-		movement.movespeed = -globalSpeed;
-		
+		movement.movespeed = -globalSpeed;	
+		Debug.Log(globalSpeed + "From movement");
+		 
 		//set the rotate speed to the lamp (directional light) rotate speed 
 		if(lampMovement != null)
 			movement.rotateSpeed = lampMovement.rotateSpeed;

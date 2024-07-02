@@ -11,11 +11,13 @@ public class GameManager : MonoBehaviour {
 	public Text timeLabel;
 	public Text gameOverScoreLabel;
 	public Text gameOverBestLabel;
+	
 	public Animator scoreEffect;
 	public Animator UIAnimator;
 	public Animator gameOverAnimator;
 	public AudioSource gameOverAudio;
 	public Car car;
+	private WorldGenerator worldGenerator;
 	
 	//not visible in the inspector
 	float time;
@@ -26,6 +28,7 @@ public class GameManager : MonoBehaviour {
 	void Start(){
 		//show the initial score of 0
 		UpdateScore(0);
+		
 	}
 	
 	void Update(){
@@ -37,6 +40,7 @@ public class GameManager : MonoBehaviour {
 			UIAnimator.SetTrigger("Start");
 			StartCoroutine(LoadScene(SceneManager.GetActiveScene().name));
 		}
+		
 	}
 	
 	void UpdateTimer(){
@@ -82,6 +86,12 @@ public class GameManager : MonoBehaviour {
 		
 		//the game is over
 		gameOver = true;
+		foreach(WorldGenerator gloabalspeed in GameObject.FindObjectsOfType<WorldGenerator>()){
+			gloabalspeed.speedIncrement = 0;
+			gloabalspeed.speedIncreaseInterval = 0;
+			Debug.Log("BIG BRAIN");
+		}
+		
 		
 		//break the car
 		car.FallApart();
@@ -99,8 +109,8 @@ public class GameManager : MonoBehaviour {
 			PlayerPrefs.SetInt("best", score);
 		
 		//show the score and the high score
-		gameOverScoreLabel.text = "score: " + score;
-		gameOverBestLabel.text = "best: " + PlayerPrefs.GetInt("best");
+		gameOverScoreLabel.text = "Gates Crossed: " + score;
+		gameOverBestLabel.text = "Best: " + PlayerPrefs.GetInt("best");
 	}
 	
 	//wait less than a second and load the given scene

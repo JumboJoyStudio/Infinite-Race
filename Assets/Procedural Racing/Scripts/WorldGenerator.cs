@@ -88,7 +88,7 @@ public class WorldGenerator : MonoBehaviour {
 		UpdateAllItems();
 
 		speedText.text = "Speed:" +globalSpeed.ToString();
-		speedText.text = PlayerPrefs.SetFloat(speed);
+		//speedText.text = PlayerPrefs.SetFloat(speed);
 
 	}
 	
@@ -256,7 +256,7 @@ public class WorldGenerator : MonoBehaviour {
 				vertices[index] += (center - vertices[index]).normalized * Mathf.PerlinNoise(pX, pZ) * waveHeight;
 				
 				//this part handles smooth transition between world pieces:
-				
+
 				//check if there are begin points and if we're at the start of the mesh (z means the forward direction, so through the cylinder)
 				if(z < startTransitionLength && beginPoints[0] != Vector3.zero){
 					//if so, we must combine the perlin noise value with the begin points
